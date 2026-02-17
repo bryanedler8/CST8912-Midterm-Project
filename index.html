@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload Client - Azure Blob Storage</title>
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="Professional image upload client for Azure Blob Storage with drag & drop support">
+    <meta name="author" content="Your Name">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Favicon (optional) -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4-3h2v13h-2z'/%3E%3C/svg%3E">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">
+                <span class="header-icon">📸</span>
+                Image Upload Client
+            </h1>
+            <p class="header-subtitle">Upload images directly to Azure Blob Storage</p>
+        </header>
+
+        <!-- Main Upload Area -->
+        <main>
+            <!-- Upload Zone -->
+            <div class="upload-zone" id="dropArea">
+                <div class="upload-zone-content">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <h2 class="upload-title">Drag & drop images here</h2>
+                    <p class="upload-text">or <span class="upload-link">click to browse</span></p>
+                    <p class="upload-hint">Supports: JPG, PNG, GIF, WebP (Max: 10MB per file)</p>
+                </div>
+                <input type="file" id="fileInput" multiple accept="image/*" hidden>
+            </div>
+
+            <!-- File List Section -->
+            <section class="file-section" id="fileSection" style="display: none;">
+                <div class="file-section-header">
+                    <h2 class="file-section-title">
+                        Selected Files
+                        <span class="file-count" id="fileCount">0</span>
+                    </h2>
+                    <div class="file-section-actions">
+                        <button class="btn btn-secondary" id="clearBtn" title="Clear all files">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Clear All
+                        </button>
+                        <button class="btn btn-primary" id="uploadBtn">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0L8 12m4-4v12"/>
+                            </svg>
+                            Upload All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- File List Container -->
+                <div class="file-list" id="fileList"></div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="stats-section" id="statsSection" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalFiles">0</div>
+                        <div class="stat-label">Total Files</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalSize">0 MB</div>
+                        <div class="stat-label">Total Size</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="uploadedCount">0</div>
+                        <div class="stat-label">Uploaded</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successRate">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">
+                Built with <span class="footer-heart">❤️</span> for Azure Blob Storage
+            </p>
+        </footer>
+    </div>
+
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- JavaScript -->
+    <script src="js/upload-manager.js"></script>
+</body>
+</html>
