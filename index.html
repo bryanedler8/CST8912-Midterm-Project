@@ -5,15 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Upload Client - Azure Blob Storage</title>
     
-    <!-- Meta tags for SEO -->
-    <meta name="description" content="Professional image upload client for Azure Blob Storage with drag & drop support">
+    <!-- Meta tags -->
+    <meta name="description" content="Upload images directly to Azure Blob Storage">
     <meta name="author" content="Your Name">
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
-    
-    <!-- Favicon (optional) -->
-    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4-3h2v13h-2z'/%3E%3C/svg%3E">
 </head>
 <body>
     <div class="container">
@@ -26,7 +23,7 @@
             <p class="header-subtitle">Upload images directly to Azure Blob Storage</p>
         </header>
 
-        <!-- Main Upload Area -->
+        <!-- Main Content -->
         <main>
             <!-- Upload Zone -->
             <div class="upload-zone" id="dropArea">
@@ -50,7 +47,7 @@
                         <span class="file-count" id="fileCount">0</span>
                     </h2>
                     <div class="file-section-actions">
-                        <button class="btn btn-secondary" id="clearBtn" title="Clear all files">
+                        <button class="btn btn-secondary" id="clearBtn">
                             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -66,8 +63,6 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- File List Container -->
                 <div class="file-list" id="fileList"></div>
             </section>
 
@@ -102,10 +97,11 @@
         </footer>
     </div>
 
-    <!-- Toast Container for Notifications -->
+    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- JavaScript -->
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
     <script src="js/upload-manager.js"></script>
 </body>
 </html>
