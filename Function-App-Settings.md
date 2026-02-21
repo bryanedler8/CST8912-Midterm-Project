@@ -92,6 +92,8 @@ Now we'll create the Function App that will process your images. **Important:** 
 
 
 
+**list of storages created will be:**
+
 - **Storage 1**: `customerimages` - This is your **Function App's internal storage** (created by you during Function App creation)
 - **Storage 2**: `imageresizecst12` - This is your **image storage** with the `images` and `thumbnails` containers ✅
 
@@ -142,7 +144,7 @@ After adding, your settings should look like:
 | **`THUMBNAIL_WIDTH`** | `300` | Resize setting ✅ |
 
 
-This is a common issue! The problem is that you need to **enable the system-assigned managed identity first** before it will appear in the IAM role assignment list .
+
 
 
 
