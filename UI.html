@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Pipeline Uploader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+        }
+        .upload-area.dragover {
+            border-color: #28a745;
+            background-color: #f8f9fa;
+        }
+        #fileInput {
+            display: none;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        .progress-section {
+            margin-top: 20px;
+            display: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+            font-size: 12px;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .processing {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .ready {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 20px;
+            display: none;
+            border-radius: 4px;
+        }
+        #downloadBtn {
+            background-color: #28a745;
+            display: none;
+        }
+        #downloadBtn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Image Pipeline Uploader</h1>
+        
+        <!-- Upload Area -->
+        <div class="upload-area" id="uploadArea">
+            <p>Drag & drop an image here or click to select</p>
+            <p style="font-size: 12px; color: #666;">(Images will be resized to .jpg format)</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*">
+        
+        <!-- Upload Button -->
+        <div style="text-align: center;">
+            <button id="uploadBtn" disabled>Upload Image</button>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section" id="progressSection">
+            <h3>Upload Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="uploadProgress">0%</div>
+            </div>
+            
+            <h3 style="margin-top: 20px;">Processing Status</h3>
+            <div class="status" id="statusMessage">Waiting to start...</div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="downloadBtn">📥 Download Resized Image</button>
+            </div>
+            
+            <img id="preview" class="image-preview" alt="Resized preview">
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const progressSection = document.getElementById('progressSection');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const statusMessage = document.getElementById('statusMessage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const preview = document.getElementById('preview');
+
+        // State
+        let selectedFile = null;
+        let currentImageId = null;
+        let currentDownloadUrl = null;
+        let pollingInterval = null;
+
+        // Drag & Drop Handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        // File Selection Handler
+        function handleFileSelect(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            selectedFile = file;
+            uploadBtn.disabled = false;
+            uploadArea.style.borderColor = '#28a745';
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Upload Button Click
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            // Reset UI
+            progressSection.style.display = 'block';
+            uploadProgress.style.width = '0%';
+            uploadProgress.textContent = '0%';
+            statusMessage.textContent = 'Initializing upload...';
+            statusMessage.className = 'status';
+            downloadBtn.style.display = 'none';
+            preview.style.display = 'none';
+            
+            try {
+                // Step 1: Initialize upload with your API
+                statusMessage.textContent = 'Requesting upload permission...';
+                const initResponse = await fetch('/api/uploads/init', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        // Add any required fields from InitUploadRequest
+                        // Based on your DTO, you might need to send something
+                        filename: selectedFile.name,
+                        contentType: selectedFile.type
+                    })
+                });
+
+                if (!initResponse.ok) {
+                    throw new Error('Failed to initialize upload');
+                }
+
+                const initData = await initResponse.json();
+                currentImageId = initData.imageId;
+                console.log('Got upload URL:', initData.uploadUrl);
+
+                // Step 2: Upload directly to Azure using SAS URL
+                statusMessage.textContent = 'Uploading to Azure...';
+                
+                const xhr = new XMLHttpRequest();
+                
+                // Track upload progress
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        uploadProgress.style.width = percent + '%';
+                        uploadProgress.textContent = Math.round(percent) + '%';
+                    }
+                });
+
+                // Wait for upload to complete
+                await new Promise((resolve, reject) => {
+                    xhr.open('PUT', initData.uploadUrl, true);
+                    xhr.setRequestHeader('x-ms-blob-type', 'BlockBlob');
+                    xhr.setRequestHeader('Content-Type', selectedFile.type);
+                    
+                    xhr.onload = () => {
+                        if (xhr.status === 201) {
+                            resolve();
+                        } else {
+                            reject(new Error('Upload failed with status: ' + xhr.status));
+                        }
+                    };
+                    
+                    xhr.onerror = () => reject(new Error('Upload failed'));
+                    xhr.send(selectedFile);
+                });
+
+                statusMessage.textContent = 'Upload complete! Processing image...';
+                statusMessage.className = 'status processing';
+                
+                // Step 3: Start polling for status
+                startPolling(currentImageId);
+
+            } catch (error) {
+                console.error('Error:', error);
+                statusMessage.textContent = 'Error: ' + error.message;
+                statusMessage.className = 'status error';
+            }
+        });
+
+        // Poll for image status
+        function startPolling(imageId) {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/images/${imageId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to get status');
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.status === 'READY') {
+                        // Processing complete!
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                        
+                        statusMessage.textContent = 'Image ready for download!';
+                        statusMessage.className = 'status ready';
+                        
+                        currentDownloadUrl = data.downloadUrl;
+                        downloadBtn.style.display = 'inline-block';
+                        
+                        // Show preview from Azure
+                        preview.src = data.downloadUrl;
+                        preview.style.display = 'block';
+                        
+                    } else {
+                        // Still processing
+                        statusMessage.textContent = 'Processing image... (polling)';
+                        statusMessage.className = 'status processing';
+                    }
+                    
+                } catch (error) {
+                    console.error('Polling error:', error);
+                    statusMessage.textContent = 'Error checking status';
+                    statusMessage.className = 'status error';
+                }
+            }, 2000); // Poll every 2 seconds
+        }
+
+        // Download button click
+        downloadBtn.addEventListener('click', () => {
+            if (currentDownloadUrl) {
+                // Create a temporary link and click it
+                const link = document.createElement('a');
+                link.href = currentDownloadUrl;
+                link.download = 'resized-image.jpg'; // or extract from URL
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+
+        // Clean up polling on page unload
+        window.addEventListener('beforeunload', () => {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        });
+    </script>
+</body>
+</html>
